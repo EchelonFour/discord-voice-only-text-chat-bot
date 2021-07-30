@@ -1,11 +1,12 @@
 
 import { Client, GuildMember, Intents, VoiceChannel, Role, Collection } from 'discord.js'
+import config from './config.js'
 
 function stripAndLowerCase(string: string): string {
   return string.toLowerCase().replace(/[^a-z]/g, '')
 }
 function findRolesForVoiceChannel(voiceChannel: VoiceChannel): Collection<string, Role> {
-  const magicGeneralRoleName = 'currentlyinvoicechannel'
+  const magicGeneralRoleName = config.get('magicRoleName')
   const magicVoiceChannelRoleName = `${magicGeneralRoleName}${stripAndLowerCase(voiceChannel.name)}`
   return voiceChannel.guild.roles.cache.filter((role) => {
     const roleName = stripAndLowerCase(role.name)
@@ -93,4 +94,4 @@ client.on('disconnect', stream => {
   console.warn('[discord] disconnect', stream)
 })
 // Log our bot in using the token from env variable DISCORD_TOKEN
-client.login();
+client.login(config.get('discordToken'))
