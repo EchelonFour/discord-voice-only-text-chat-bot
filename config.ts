@@ -1,5 +1,6 @@
 import convict from 'convict'
 import { existsSync } from 'fs'
+import logger from './logger.js'
 
 convict.addFormat({
   name: 'case-insentive-and-aplha-only',
@@ -36,6 +37,18 @@ export const config = convict({
     env: 'DISCORD_TOKEN',
     sensitive: true,
   },
+  logLevel: {
+    doc: 'Level of logs to print to stdout',
+    format: ['fatal', 'error', 'warn', 'info', 'debug', 'trace'],
+    default: 'debug' as 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace',
+    env: 'LOG_LEVEL',
+  },
+  logLevelDiscord: {
+    doc: 'Level of logs to print to stdout for the discord library components',
+    format: ['fatal', 'error', 'warn', 'info', 'debug', 'trace'],
+    default: 'info' as 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace',
+    env: 'LOG_LEVEL_DISCORD',
+  },
 })
 const env = config.get('env')
 const filesToLoad = [`./config/local.json`, `./config/${env}.json`]
@@ -44,6 +57,13 @@ for (const file of filesToLoad) {
     config.loadFile(file)
   }
 }
-config.validate()
+
+logger.level = config.get('logLevel')
+
+config.validate({
+  allowed: 'strict',
+  output: (message) => {
+    logger.error(message)
+  }})
 
 export default config
