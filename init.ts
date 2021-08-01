@@ -1,9 +1,9 @@
 import config from './config.js'
-import logger from './logger.js'
+import globalLogger from './logger.js'
 
 config.validate({
   allowed: 'strict',
   output: (message) => {
-    logger.error(message)
+    globalLogger.error(message)
   }
 })
