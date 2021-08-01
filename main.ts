@@ -36,9 +36,14 @@ function calculateRoleDifference(oldChannel: VoiceChannel | null, newChannel: Vo
   throw new Error('user moved from no channel to no channel????')
 }
 
+const clientIntents = [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES]
+if (config.get('autoAssignedRole')) {
+  botLogger.info('Also listening on members joining or leaving')
+  clientIntents.push(Intents.FLAGS.GUILD_MEMBERS)
+}
 const client = new Client({
   ws: {
-    intents: [Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILDS]
+    intents: clientIntents
   }
 });
 client.on('ready', () => {
@@ -77,6 +82,22 @@ client.on('warn', message => {
 })
 client.on('disconnect', () => {
   discordLogger.warn('disconnect')
+})
+client.on('guildMemberAdd', async (member) => {
+  const roleToAdd = config.get('autoAssignedRole')
+  if (roleToAdd) {
+    botLogger.info({ member }, 'guildMemberAdd event fired')
+    botLogger.debug('adding role "%s" to user %s', roleToAdd, member.displayName)
+    try {
+      const roleActual = member.guild.roles.cache.find((role) => role.name == roleToAdd)
+      if (!roleActual) {
+        throw new Error(`could not find role ${roleToAdd}`)
+      }
+      await member.roles.add(roleActual, 'They joined and everyone gets this')
+    } catch (err) {
+      botLogger.error(err, 'could not add "%s" role to member', roleToAdd)
+    }
+  }
 })
 // Log our bot in using the token from env variable DISCORD_TOKEN
 client.login(config.get('discordToken'))

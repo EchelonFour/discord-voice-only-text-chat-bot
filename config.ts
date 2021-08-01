@@ -49,6 +49,13 @@ export const config = convict({
     default: 'info' as 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace',
     env: 'LOG_LEVEL_DISCORD',
   },
+  autoAssignedRole: {
+    doc: 'Role that everyone that joins gets assigned',
+    format: String,
+    default: null as string | null,
+    env: 'AUTO_ASSIGNED_ROLE',
+    nullable: true,
+  },
 })
 const env = config.get('env')
 const filesToLoad = [`./config/local.json`, `./config/${env}.json`]
