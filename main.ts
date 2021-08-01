@@ -1,52 +1,42 @@
 
-import { Client, GuildMember, Intents, VoiceChannel, Role, Collection } from 'discord.js'
+import { Client, GuildMember, Intents, Collection, Invite, Guild } from 'discord.js'
+
+
 import config from './config.js'
 import logger from './logger.js'
+import { wait } from './util.js'
+
+import { calculateRoleDifference } from './roleCalculations.js'
+import { determineIfTemporaryInviteUsedAndUpdateInviteCache } from './inviteCalculations.js'
 
 import './init.js'
-
+import { InviteCache, TemporaryMemberCache } from './cache.js'
 const botLogger = logger.child({ module: 'bot' })
 
-function stripAndLowerCase(string: string): string {
-  return string.toLowerCase().replace(/[^a-z]/g, '')
-}
-function findRolesForVoiceChannel(voiceChannel: VoiceChannel): Collection<string, Role> {
-  const magicGeneralRoleName = config.get('magicRoleName')
-  const magicVoiceChannelRoleName = `${magicGeneralRoleName}${stripAndLowerCase(voiceChannel.name)}`
-  return voiceChannel.guild.roles.cache.filter((role) => {
-    const roleName = stripAndLowerCase(role.name)
-    return roleName == magicGeneralRoleName || roleName == magicVoiceChannelRoleName
-  })
-}
-function calculateRoleDifference(oldChannel: VoiceChannel | null, newChannel: VoiceChannel | null): [Collection<string, Role>, Collection<string, Role>] | [Collection<string, Role> | null, Collection<string, Role>] | [Collection<string, Role>, Collection<string, Role> | null] {
-  if (!oldChannel && newChannel) {
-    return [null, findRolesForVoiceChannel(newChannel)]
-  }
-  if (oldChannel && !newChannel) {
-    return [findRolesForVoiceChannel(oldChannel), null]
-  }
-  if (oldChannel && newChannel) {
-    const oldRoles = findRolesForVoiceChannel(oldChannel)
-    const newRoles = findRolesForVoiceChannel(newChannel)
-    const keptRoles = oldRoles.intersect(newRoles)
-    oldRoles.sweep((_, key) => keptRoles.has(key))
-    newRoles.sweep((_, key) => keptRoles.has(key))
-    return [oldRoles, newRoles]
-  }
-  throw new Error('user moved from no channel to no channel????')
-}
 
 const clientIntents = [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES]
-if (config.get('autoAssignedRole')) {
+if (config.get('autoAssignedRole') || config.get('dontAddRolesToTemporaryMembers')) {
   botLogger.info('Also listening on members joining or leaving')
   clientIntents.push(Intents.FLAGS.GUILD_MEMBERS)
 }
+if (config.get('dontAddRolesToTemporaryMembers')) {
+  botLogger.info('Also listening for invites')
+  clientIntents.push(Intents.FLAGS.GUILD_INVITES)
+}
+
+const inviteCache = new InviteCache()
+const temporaryMembers = new TemporaryMemberCache()
 const client = new Client({
   ws: {
     intents: clientIntents
   }
 });
-client.on('ready', () => {
+client.on('ready', async () => {
+  botLogger.debug({ guilds: client.guilds.cache.map((guild) => guild.name) }, 'shard is dealing with guilds')
+  for (const guild of client.guilds.cache.values()) {
+    const guildInvites = await inviteCache.fetchAndCache(guild)
+    botLogger.debug('found %d invites for guild %s', guildInvites.size, guild.name)
+  }
   botLogger.info('Ready')
 })
 client.on('voiceStateUpdate', async (oldState, newState) => {
@@ -54,8 +44,13 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     botLogger.trace('user muted or defeaned or whatever. dont care')
     return
   }
+  const member = oldState.member || newState.member
+  botLogger.info(`voiceStateUpdate event with user ${member?.displayName} going from ${oldState.channel?.name} to ${newState.channel?.name}`)
+  if (member && config.get('dontAddRolesToTemporaryMembers') && temporaryMembers.has(member)) {
+    botLogger.info({ member }, 'this user is only temporary, so we cant add roles to them')
+    return
+  }
   try {
-    botLogger.info(`voiceStateUpdate event with user ${(oldState.member || newState.member)?.displayName} going from ${oldState.channel?.name} to ${newState.channel?.name}`)
     const roles = calculateRoleDifference(oldState.channel, newState.channel)
     if (roles[0]?.size && oldState.member) { // something to be deleted
       botLogger.debug(`${oldState.member.displayName} removed from roles ${roles[0].map(role => role.name).join(', ')}`)
@@ -84,9 +79,17 @@ client.on('disconnect', () => {
   discordLogger.warn('disconnect')
 })
 client.on('guildMemberAdd', async (member) => {
+  botLogger.info({ member }, 'guildMemberAdd event fired')
   const roleToAdd = config.get('autoAssignedRole')
-  if (roleToAdd) {
-    botLogger.info({ member }, 'guildMemberAdd event fired')
+  let shouldAddRole = !!roleToAdd
+  if (shouldAddRole && config.get('dontAddRolesToTemporaryMembers'))  {
+    const temporary = await determineIfTemporaryInviteUsedAndUpdateInviteCache(member.guild, inviteCache)
+    if (temporary) {
+      shouldAddRole = false
+      temporaryMembers.addToCache(member)
+    }
+  }
+  if (shouldAddRole) {
     botLogger.debug('adding role "%s" to user %s', roleToAdd, member.displayName)
     try {
       const roleActual = member.guild.roles.cache.find((role) => role.name == roleToAdd)
@@ -98,6 +101,19 @@ client.on('guildMemberAdd', async (member) => {
       botLogger.error(err, 'could not add "%s" role to member', roleToAdd)
     }
   }
+})
+client.on('guildMemberRemove', (member) => {
+  botLogger.info({ member }, 'guildMemberRemove event fired')
+  temporaryMembers.deleteFromCache(member)
+})
+client.on('inviteCreate', (invite) => {
+  botLogger.debug({ invite }, 'new invite')
+  inviteCache.addToCache(invite)
+})
+client.on('inviteDelete', async (invite) => {
+  await wait(config.get('inviteDeleteWaitTimeMs')) // we wait a little before deleting them, so if they were deleted by a user add event, we have time to see that
+  botLogger.debug({ invite }, 'deleted invite')
+  inviteCache.deleteFromCache(invite)
 })
 // Log our bot in using the token from env variable DISCORD_TOKEN
 client.login(config.get('discordToken'))

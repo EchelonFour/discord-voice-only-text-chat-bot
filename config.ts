@@ -1,6 +1,5 @@
 import convict from 'convict'
 import { existsSync } from 'fs'
-import logger from './logger.js'
 
 convict.addFormat({
   name: 'case-insentive-and-aplha-only',
@@ -56,6 +55,18 @@ export const config = convict({
     env: 'AUTO_ASSIGNED_ROLE',
     nullable: true,
   },
+  dontAddRolesToTemporaryMembers: {
+    doc: 'Prevents from adding roles to members that we assume are temporary. Temporary members become perminant if they have roles, so we need to do this.',
+    format: Boolean,
+    default: true,
+    env: 'DONT_ADD_ROLES_TO_TEMP'
+  },
+  inviteDeleteWaitTimeMs: {
+    doc: 'Time to wait after an invite is deleted before deleting it from cache. This delay allows determining which invite was used on use join events',
+    format: 'nat',
+    default: 1000,
+    env: 'INVITE_DELETE_WAIT_TIME'
+  }
 })
 const env = config.get('env')
 const filesToLoad = [`./config/local.json`, `./config/${env}.json`]
