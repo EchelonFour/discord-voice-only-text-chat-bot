@@ -1,0 +1,4 @@
+{
+  "messageFormat": "\u001B[35m[{module}]\u001B[39m - {msg}",
+  "ignore": "pid,hostname,module"
+}
