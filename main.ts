@@ -3,6 +3,8 @@ import { Client, GuildMember, Intents, VoiceChannel, Role, Collection } from 'di
 import config from './config.js'
 import logger from './logger.js'
 
+import './init.js'
+
 const botLogger = logger.child({ module: 'bot' })
 
 function stripAndLowerCase(string: string): string {

@@ -1,6 +1,9 @@
 import pino from 'pino'
+import config from './config.js'
 
-export const logger = pino()
+export const logger = pino({
+  level: config.get('logLevel')
+})
 
 // use pino.final to create a special logger that
 // guarantees final tick writes

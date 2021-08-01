@@ -58,12 +58,4 @@ for (const file of filesToLoad) {
   }
 }
 
-logger.level = config.get('logLevel')
-
-config.validate({
-  allowed: 'strict',
-  output: (message) => {
-    logger.error(message)
-  }})
-
 export default config
