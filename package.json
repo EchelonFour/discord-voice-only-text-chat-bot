@@ -1,5 +1,5 @@
 {
-  "name": "discord-voice-bot",
+  "name": "discord-voice-only-text-chat-bot",
   "version": "1.0.0",
   "description": "",
   "main": "main.ts",
