@@ -29,6 +29,12 @@ if (config.get('dontAddRolesToTemporaryMembers')) {
 const client = new Client({
   ws: {
     intents: clientIntents
+  },
+  presence: {
+    activity: {
+      name: 'whos in the voice chat',
+      type: 'WATCHING'
+    }
   }
 })
 setUpDiscordLoggerListener(client)
