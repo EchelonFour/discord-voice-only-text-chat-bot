@@ -26,12 +26,13 @@ function determineWhichInviteWasUsed(oldInvitesForGuild: Collection<string, Invi
   return null
 }
 export async function determineIfTemporaryInviteUsedAndUpdateInviteCache(guild: Guild, cache: InviteCache) {
+  const guildLogger = logger.child({ guild: guild.id })
   return await cache.gate.workFast(guild, async () => {
     const oldInvites = cache.getGuild(guild)
-    logger.debug('fetching invites for guild %s', guild.name)
+    guildLogger.debug('fetching invites for guild %s', guild.name)
     const newInvites = await cache.fetchAndCache(guild)
     const inviteUsed = determineWhichInviteWasUsed(oldInvites, newInvites)
-    logger.debug({ inviteUsed }, 'new user used invite %s', inviteUsed?.code || 'unknown')
+    guildLogger.debug({ inviteUsed }, 'new user used invite %s', inviteUsed?.code || 'unknown')
     return inviteUsed && inviteUsed.temporary
   })
 }
