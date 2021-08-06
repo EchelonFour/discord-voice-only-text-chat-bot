@@ -64,7 +64,7 @@ export const config = convict({
   inviteDeleteWaitTimeMs: {
     doc: 'Time to wait after an invite is deleted before deleting it from cache. This delay allows determining which invite was used on use join events',
     format: 'nat',
-    default: 1000,
+    default: 500,
     env: 'INVITE_DELETE_WAIT_TIME'
   }
 })

@@ -103,14 +103,18 @@ client.on('guildMemberRemove', (member) => {
   logger.info({ member }, 'guildMemberRemove event fired')
   temporaryMembers.deleteFromCache(member)
 })
-client.on('inviteCreate', (invite) => {
+client.on('inviteCreate', async (invite) => {
   logger.debug({ invite }, 'new invite')
-  inviteCache.addToCache(invite)
+  await inviteCache.gate.workFast(invite.guild, async () => {
+    inviteCache.addToCache(invite)
+  })
 })
 client.on('inviteDelete', async (invite) => {
   await wait(config.get('inviteDeleteWaitTimeMs')) // we wait a little before deleting them, so if they were deleted by a user add event, we have time to see that
   logger.debug({ invite }, 'deleted invite')
-  inviteCache.deleteFromCache(invite)
+  await inviteCache.gate.workSlow(invite.guild, async () => {
+    inviteCache.deleteFromCache(invite)
+  })
 })
 // Log our bot in using the token from env variable DISCORD_TOKEN
 client.login(config.get('discordToken'))

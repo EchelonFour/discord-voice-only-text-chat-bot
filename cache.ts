@@ -1,4 +1,5 @@
 import { Collection, Guild, GuildMember, Invite, PartialGuildMember } from 'discord.js'
+import { GuildGate } from './guildGate.js'
 
 import globalLogger from './logger.js'
 
@@ -45,6 +46,8 @@ abstract class BaseCache<T extends { guild: Guild | null }> {
 
 }
 export class InviteCache extends BaseCache<Invite> {
+
+  protected _gate = new GuildGate()
   protected key(item: Invite): string {
     return item.code
   }
@@ -53,6 +56,9 @@ export class InviteCache extends BaseCache<Invite> {
     const guildInvites = await guild.fetchInvites()
     this.cache.set(guild.id, guildInvites)
     return guildInvites
+  }
+  public get gate() {
+    return this._gate
   }
 }
 
