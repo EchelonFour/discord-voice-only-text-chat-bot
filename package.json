@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node --no-warnings --loader ts-node/esm main.ts | pino-pretty  --config=pino-config/pino-pretty.config.js",
     "build": "tsc",
+    "buildConfigTable": "node --no-warnings --loader ts-node/esm configTableGenerator.ts",
     "start:prod": "node --enable-source-maps dist/main.js"
   },
   "author": "",
@@ -14,6 +15,7 @@
   "devDependencies": {
     "@types/async-lock": "^1.1.3",
     "@types/convict": "^6.1.1",
+    "markdown-table": "^3.0.1",
     "pino-pretty": "^5.1.2",
     "ts-node": "^10.1.0",
     "typescript": "^4.3.5"
