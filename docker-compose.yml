@@ -1,6 +1,7 @@
 version: "3.9"
 services:
   bot:
-    build: .
+    image: ghcr.io/echelonfour/discord-voice-only-text-chat-bot:latest
     environment:
-      - DISCORD_TOKEN
+      - DISCORD_TOKEN=abc123
+      - AUTO_ASSIGNED_ROLE=everyone

@@ -32,7 +32,7 @@ const client = new Client({
   },
   presence: {
     activity: {
-      name: 'whos in the voice chat',
+      name: 'who\'s in the voice chat',
       type: 'WATCHING'
     }
   }
@@ -49,7 +49,7 @@ client.on('ready', async () => {
 })
 client.on('voiceStateUpdate', async (oldState, newState) => {
   if (oldState.channelID == newState.channelID) {
-    logger.trace('user muted or defeaned or whatever. dont care')
+    logger.trace('user muted or deafened or whatever. dont care')
     return
   }
   const member = oldState.member || newState.member

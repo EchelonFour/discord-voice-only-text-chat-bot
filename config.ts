@@ -2,7 +2,7 @@ import convict from 'convict'
 import { existsSync } from 'fs'
 
 convict.addFormat({
-  name: 'case-insentive-and-alpha-only',
+  name: 'case-insensitive-and-alpha-only',
   validate(val) {
     if (typeof val !== 'string') {
       throw new TypeError('must be a string')
@@ -25,7 +25,7 @@ export const config = convict({
   },
   magicRoleName: {
     doc: 'Name of the role that discord assigns when joining voice channel. This field is always stripped of case and any non-alpha characters.',
-    format: 'case-insentive-and-alpha-only',
+    format: 'case-insensitive-and-alpha-only',
     default: 'currentlyinvoicechannel',
     env: 'MAGIC_ROLE',
   },
@@ -56,7 +56,7 @@ export const config = convict({
     nullable: true,
   },
   dontAddRolesToTemporaryMembers: {
-    doc: 'Prevents from adding roles to members that we assume are temporary. Temporary members become perminant if they have roles, so we need to do this. However this is significant overhead and it is also a bit of guesswork.',
+    doc: 'Prevents from adding roles to members that we assume are temporary. Temporary members become permanent if they have roles, so we need to do this. However this is significant overhead and it is also a bit of guesswork.',
     format: Boolean,
     default: true,
     env: 'DONT_ADD_ROLES_TO_TEMP'
