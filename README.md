@@ -1,5 +1,8 @@
 Discord Bot for voice only text chat
 ====================================
+[![CI](https://github.com/EchelonFour/discord-voice-only-text-chat-bot/actions/workflows/main.yml/badge.svg)](https://github.com/EchelonFour/discord-voice-only-text-chat-bot/actions/workflows/main.yml)
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/EchelonFour/discord-voice-only-text-chat-bot)](https://github.com/EchelonFour/discord-voice-only-text-chat-bot/releases)
+
 This is a bot that simply watches your server and will add and remove roles to those in the voice channels. If the roles are set up correctly, this will give the appearance of a text channel appearing and disappearing for those in the voice channel.
 
 How to setup discord
