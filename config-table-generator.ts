@@ -1,5 +1,6 @@
+// eslint-disable-next-line import/no-extraneous-dependencies -- its cool, this is a dev only file
 import { markdownTable } from 'markdown-table'
-import config from './config.js'
+import config from './src/config.js'
 
 export function configSchemaAsTable(): string {
   const schema = config.getSchema() as any
