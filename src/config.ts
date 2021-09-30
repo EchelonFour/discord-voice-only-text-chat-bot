@@ -3,7 +3,7 @@ import { existsSync } from 'fs'
 
 convict.addFormat({
   name: 'case-insensitive-and-alpha-only',
-  validate(val) {
+  validate(val: unknown): void {
     if (typeof val !== 'string') {
       throw new TypeError('must be a string')
     }
@@ -11,7 +11,7 @@ convict.addFormat({
       throw new TypeError('must not be empty')
     }
   },
-  coerce(val) {
+  coerce(val: unknown): unknown {
     return typeof val === 'string' ? val.toLowerCase().replace(/[^a-z]/g, '') : val
   },
 })
