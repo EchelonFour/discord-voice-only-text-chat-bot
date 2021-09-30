@@ -1,6 +1,6 @@
 import { Collection, Guild, Invite } from 'discord.js'
 
-import { InviteCache } from './cache.js'
+import { InviteCache } from './cache/InviteCache'
 import globalLogger from './logger.js'
 
 const logger = globalLogger.child({ module: 'invite' })
