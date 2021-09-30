@@ -11,17 +11,17 @@ export class GuildGate {
   private async workAtSpeed<T>(guild: Guild | null | undefined, work: () => Promise<T>, fast: boolean) {
     if (!guild || !guild.id) {
       logger.warn({ guild }, 'unsure of how to handle a gateable item with no guild, so silently ignoring')
-      return await work()
+      return work()
     }
 
-    return await this.gate.acquire(guild.id, work, { skipQueue: fast })
+    return this.gate.acquire(guild.id, work, { skipQueue: fast })
   }
 
   public async workFast<T>(guild: Guild | null | undefined, work: () => Promise<T>) {
-    return await this.workAtSpeed(guild, work, true)
+    return this.workAtSpeed(guild, work, true)
   }
 
   public async workSlow<T>(guild: Guild | null | undefined, work: () => Promise<T>) {
-    return await this.workAtSpeed(guild, work, false)
+    return this.workAtSpeed(guild, work, false)
   }
 }

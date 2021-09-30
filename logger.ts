@@ -2,7 +2,7 @@ import pino from 'pino'
 import config from './config.js'
 
 export const globalLogger = pino({
-  level: config.get('logLevel')
+  level: config.get('logLevel'),
 })
 
 // use pino.final to create a special logger that

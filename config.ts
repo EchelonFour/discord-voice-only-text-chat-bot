@@ -13,7 +13,7 @@ convict.addFormat({
   },
   coerce(val) {
     return typeof val === 'string' ? val.toLowerCase().replace(/[^a-z]/g, '') : val
-  }
+  },
 })
 
 export const config = convict({
@@ -59,14 +59,14 @@ export const config = convict({
     doc: 'Prevents from adding roles to members that we assume are temporary. Temporary members become permanent if they have roles, so we need to do this. However this is significant overhead and it is also a bit of guesswork.',
     format: Boolean,
     default: true,
-    env: 'DONT_ADD_ROLES_TO_TEMP'
+    env: 'DONT_ADD_ROLES_TO_TEMP',
   },
   inviteDeleteWaitTimeMs: {
     doc: 'Time to wait after an invite is deleted before deleting it from cache. This delay allows determining which invite was used on use join events.',
     format: 'nat',
     default: 500,
-    env: 'INVITE_DELETE_WAIT_TIME'
-  }
+    env: 'INVITE_DELETE_WAIT_TIME',
+  },
 })
 const env = config.get('env')
 const filesToLoad = [`./config/${env}.json`, `./config/local.json`]

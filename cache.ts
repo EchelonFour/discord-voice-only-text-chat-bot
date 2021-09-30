@@ -5,7 +5,6 @@ import globalLogger from './logger.js'
 
 const logger = globalLogger.child({ module: 'cache' })
 
-
 abstract class BaseCache<T extends { guild: Guild | null }> {
   protected cache = new Collection<string, Collection<string, T>>()
 
@@ -42,12 +41,11 @@ abstract class BaseCache<T extends { guild: Guild | null }> {
     this.getGuild(item.guild).delete(this.key(item))
   }
 
-  protected abstract key(item: T): string;
-
+  protected abstract key(item: T): string
 }
 export class InviteCache extends BaseCache<Invite> {
-
   protected _gate = new GuildGate()
+
   protected key(item: Invite): string {
     return item.code
   }
@@ -57,6 +55,7 @@ export class InviteCache extends BaseCache<Invite> {
     this.cache.set(guild.id, guildInvites)
     return guildInvites
   }
+
   public get gate() {
     return this._gate
   }

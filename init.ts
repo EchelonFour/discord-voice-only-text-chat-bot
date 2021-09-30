@@ -5,5 +5,5 @@ config.validate({
   allowed: 'strict',
   output: (message) => {
     globalLogger.error(message)
-  }
+  },
 })

@@ -1,4 +1,3 @@
-
 import { Client, Intents } from 'discord.js'
 
 import config from './config.js'
@@ -11,6 +10,7 @@ import { InviteCache, TemporaryMemberCache } from './cache.js'
 import { setUpDiscordLoggerListener } from './discordLogger.js'
 
 import './init.js'
+
 const logger = globalLogger.child({ module: 'bot' })
 
 const inviteCache = new InviteCache()
@@ -28,14 +28,14 @@ if (config.get('dontAddRolesToTemporaryMembers')) {
 
 const client = new Client({
   ws: {
-    intents: clientIntents
+    intents: clientIntents,
   },
   presence: {
     activity: {
-      name: 'who\'s in the voice chat',
-      type: 'WATCHING'
-    }
-  }
+      name: "who's in the voice chat",
+      type: 'WATCHING',
+    },
+  },
 })
 setUpDiscordLoggerListener(client)
 
@@ -54,25 +54,30 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
   }
   const member = oldState.member || newState.member
   const guildLogger = logger.child({ guild: (oldState || newState)?.guild?.id })
-  guildLogger.info(`voiceStateUpdate event with user ${member?.displayName} going from ${oldState.channel?.name} to ${newState.channel?.name}`)
+  guildLogger.info(
+    `voiceStateUpdate event with user ${member?.displayName} going from ${oldState.channel?.name} to ${newState.channel?.name}`,
+  )
   if (member && config.get('dontAddRolesToTemporaryMembers') && temporaryMembers.has(member)) {
     guildLogger.info({ member }, 'this user is only temporary, so we cant add roles to them')
     return
   }
   try {
     const roles = calculateRoleDifference(oldState.channel, newState.channel)
-    if (roles[0]?.size && oldState.member) { // something to be deleted
-      guildLogger.debug(`${oldState.member.displayName} removed from roles ${roles[0].map(role => role.name).join(', ')}`)
+    if (roles[0]?.size && oldState.member) {
+      // something to be deleted
+      guildLogger.debug(
+        `${oldState.member.displayName} removed from roles ${roles[0].map((role) => role.name).join(', ')}`,
+      )
       await oldState.member.roles.remove(roles[0], `They left the ${oldState.channel!.name} voice channel`)
     }
-    if (roles[1]?.size && newState.member) { // something to be added
-      guildLogger.debug(`${newState.member.displayName} added to roles ${roles[1].map(role => role.name).join(', ')}`)
+    if (roles[1]?.size && newState.member) {
+      // something to be added
+      guildLogger.debug(`${newState.member.displayName} added to roles ${roles[1].map((role) => role.name).join(', ')}`)
       await newState.member.roles.add(roles[1], `They joined the ${newState.channel!.name} voice channel`)
     }
   } catch (err) {
     guildLogger.error(err, 'failed to mess with roles')
   }
-
 })
 
 client.on('guildMemberAdd', async (member) => {
@@ -80,7 +85,7 @@ client.on('guildMemberAdd', async (member) => {
   guildLogger.info({ member }, 'guildMemberAdd event fired')
   const roleToAdd = config.get('autoAssignedRole')
   let shouldAddRole = !!roleToAdd
-  if (shouldAddRole && config.get('dontAddRolesToTemporaryMembers'))  {
+  if (shouldAddRole && config.get('dontAddRolesToTemporaryMembers')) {
     const temporary = await determineIfTemporaryInviteUsedAndUpdateInviteCache(member.guild, inviteCache)
     if (temporary) {
       guildLogger.info('new user is only temporary')
