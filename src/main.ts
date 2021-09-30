@@ -4,7 +4,7 @@ import config from './config.js'
 import globalLogger from './logger.js'
 import { wait } from './util.js'
 
-import { calculateRoleDifference } from './roleCalculations.js'
+import { calculateRoleDifference } from './role-calculations.js'
 import { determineIfTemporaryInviteUsedAndUpdateInviteCache } from './invite-calculations.js'
 import { InviteCache } from './cache/InviteCache'
 import { TemporaryMemberCache } from './cache/TemporaryMemberCache'

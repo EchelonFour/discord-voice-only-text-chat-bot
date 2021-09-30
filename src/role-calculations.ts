@@ -9,7 +9,7 @@ function findRolesForVoiceChannel(voiceChannel: VoiceChannel): Collection<string
   const magicVoiceChannelRoleName = `${magicGeneralRoleName}${stripAndLowerCase(voiceChannel.name)}`
   return voiceChannel.guild.roles.cache.filter((role) => {
     const roleName = stripAndLowerCase(role.name)
-    return roleName == magicGeneralRoleName || roleName == magicVoiceChannelRoleName
+    return roleName === magicGeneralRoleName || roleName === magicVoiceChannelRoleName
   })
 }
 export function calculateRoleDifference(
