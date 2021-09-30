@@ -5,7 +5,7 @@ import config from './config.js'
 
 const discordLogger = globalLogger.child({ module: 'discord' }, { level: config.get('logLevelDiscord') })
 
-export function setUpDiscordLoggerListener(client: Client) {
+export function setUpDiscordLoggerListener(client: Client): void {
   client.on('debug', (message) => {
     discordLogger.debug(message)
   })
@@ -15,7 +15,7 @@ export function setUpDiscordLoggerListener(client: Client) {
   client.on('warn', (message) => {
     discordLogger.warn(message)
   })
-  client.on('disconnect', (event, id) => {
+  client.on('disconnect', (event: unknown, id) => {
     discordLogger.warn({ event, id }, 'discord disconnect')
   })
   client.on('shardDisconnect', (event, id) => {

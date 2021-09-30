@@ -8,7 +8,7 @@ import { calculateRoleDifference } from './roleCalculations.js'
 import { determineIfTemporaryInviteUsedAndUpdateInviteCache } from './inviteCalculations.js'
 import { InviteCache } from './cache/InviteCache'
 import { TemporaryMemberCache } from './cache/TemporaryMemberCache'
-import { setUpDiscordLoggerListener } from './discordLogger.js'
+import { setUpDiscordLoggerListener } from './discord-logger.js'
 
 import './init.js'
 
