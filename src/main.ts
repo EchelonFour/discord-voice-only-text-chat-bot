@@ -1,4 +1,4 @@
-import { Client, Intents } from 'discord.js'
+import { Client, GuildMember, Intents, Invite, VoiceState } from 'discord.js'
 
 import config from './config.js'
 import globalLogger from './logger.js'
@@ -40,23 +40,33 @@ const client = new Client({
 })
 setUpDiscordLoggerListener(client)
 
-client.on('ready', async () => {
+async function readyAsync(): Promise<void> {
   logger.debug({ guilds: client.guilds.cache.map((guild) => guild.name) }, 'shard is dealing with guilds')
-  for (const guild of client.guilds.cache.values()) {
+  const fetchAllInviteCaches = client.guilds.cache.mapValues(async (guild) => {
     const guildInvites = await inviteCache.fetchAndCache(guild)
     logger.child({ guild: guild.id }).debug('found %d invites for guild %s', guildInvites.size, guild.name)
-  }
+  })
+  await Promise.all(fetchAllInviteCaches)
   logger.info('Ready')
+}
+
+client.on('ready', () => {
+  // eslint-disable-next-line promise/prefer-await-to-callbacks, promise/prefer-await-to-then
+  readyAsync().catch((error) => logger.error(error, 'error when client readying up'))
 })
-client.on('voiceStateUpdate', async (oldState, newState) => {
-  if (oldState.channelID == newState.channelID) {
+
+async function voiceStateUpdateAsync(oldState: VoiceState, newState: VoiceState): Promise<void> {
+  if (oldState.channelID === newState.channelID) {
     logger.trace('user muted or deafened or whatever. dont care')
     return
   }
   const member = oldState.member || newState.member
   const guildLogger = logger.child({ guild: (oldState || newState)?.guild?.id })
   guildLogger.info(
-    `voiceStateUpdate event with user ${member?.displayName} going from ${oldState.channel?.name} to ${newState.channel?.name}`,
+    `voiceStateUpdate event with user %s going from %s to %s`,
+    member?.displayName,
+    oldState.channel?.name,
+    newState.channel?.name,
   )
   if (member && config.get('dontAddRolesToTemporaryMembers') && temporaryMembers.has(member)) {
     guildLogger.info({ member }, 'this user is only temporary, so we cant add roles to them')
@@ -76,12 +86,18 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       guildLogger.debug(`${newState.member.displayName} added to roles ${roles[1].map((role) => role.name).join(', ')}`)
       await newState.member.roles.add(roles[1], `They joined the ${newState.channel!.name} voice channel`)
     }
-  } catch (err) {
-    guildLogger.error(err, 'failed to mess with roles')
+  } catch (error) {
+    guildLogger.error(error as Error, 'failed to mess with roles')
   }
+}
+client.on('voiceStateUpdate', (oldState, newState) => {
+  // eslint-disable-next-line promise/prefer-await-to-callbacks, promise/prefer-await-to-then
+  voiceStateUpdateAsync(oldState, newState).catch((error) =>
+    logger.error(error, 'error when client processing voice state update'),
+  )
 })
 
-client.on('guildMemberAdd', async (member) => {
+async function guildMemberAddAsync(member: GuildMember): Promise<void> {
   const guildLogger = logger.child({ guild: member?.guild?.id })
   guildLogger.info({ member }, 'guildMemberAdd event fired')
   const roleToAdd = config.get('autoAssignedRole')
@@ -102,30 +118,49 @@ client.on('guildMemberAdd', async (member) => {
         throw new Error(`could not find role ${roleToAdd}`)
       }
       await member.roles.add(roleActual, 'They joined and everyone gets this')
-    } catch (err) {
-      guildLogger.error(err, 'could not add "%s" role to member', roleToAdd)
+    } catch (error) {
+      guildLogger.error(error as Error, 'could not add "%s" role to member', roleToAdd)
     }
   }
+}
+
+client.on('guildMemberAdd', (member) => {
+  // eslint-disable-next-line promise/prefer-await-to-callbacks, promise/prefer-await-to-then
+  guildMemberAddAsync(member).catch((error) => logger.error(error, 'error when client processing guild member add'))
 })
 client.on('guildMemberRemove', (member) => {
   const guildLogger = logger.child({ guild: member?.guild?.id })
   guildLogger.info({ member }, 'guildMemberRemove event fired')
   temporaryMembers.deleteFromCache(member)
 })
-client.on('inviteCreate', async (invite) => {
+
+async function inviteCreateAsync(invite: Invite): Promise<void> {
   const guildLogger = logger.child({ guild: invite?.guild?.id })
   guildLogger.debug({ invite }, 'new invite')
-  await inviteCache.gate.workFast(invite.guild, async () => {
+  await inviteCache.gate.workFast(invite.guild, () => {
     inviteCache.addToCache(invite)
+    return Promise.resolve()
   })
+}
+
+client.on('inviteCreate', (invite) => {
+  // eslint-disable-next-line promise/prefer-await-to-callbacks, promise/prefer-await-to-then
+  inviteCreateAsync(invite).catch((error) => logger.error(error, 'error when client processing invite create'))
 })
-client.on('inviteDelete', async (invite) => {
+
+async function inviteDeleteAsync(invite: Invite): Promise<void> {
   const guildLogger = logger.child({ guild: invite?.guild?.id })
   await wait(config.get('inviteDeleteWaitTimeMs')) // we wait a little before deleting them, so if they were deleted by a user add event, we have time to see that
   guildLogger.debug({ invite }, 'deleted invite')
-  await inviteCache.gate.workSlow(invite.guild, async () => {
+  await inviteCache.gate.workSlow(invite.guild, () => {
     inviteCache.deleteFromCache(invite)
+    return Promise.resolve()
   })
+}
+
+client.on('inviteDelete', (invite) => {
+  // eslint-disable-next-line promise/prefer-await-to-callbacks, promise/prefer-await-to-then
+  inviteDeleteAsync(invite).catch((error) => logger.error(error, 'error when client processing invite create'))
 })
 // Log our bot in using the token from env variable DISCORD_TOKEN
-client.login(config.get('discordToken'))
+void client.login(config.get('discordToken'))
