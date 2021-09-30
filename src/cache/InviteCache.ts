@@ -1,5 +1,5 @@
 import type { Collection, Guild, Invite } from 'discord.js'
-import { GuildGate } from '../guildGate'
+import { GuildGate } from '../guild-gate'
 import BaseCache from './BaseCache'
 
 export class InviteCache extends BaseCache<Invite> {
