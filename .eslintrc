@@ -2,6 +2,9 @@
   "root": true,
   "extends": ["intolerable-style-guide"],
   "parserOptions": {
-    "project": "./tsconfig.json"
+    "project": [
+      "./tsconfig.json",
+      "./tsconfig.test.json"
+    ]
   }
 }
