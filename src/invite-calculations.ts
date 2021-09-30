@@ -7,13 +7,13 @@ const logger = globalLogger.child({ module: 'invite' })
 
 function usagesWithUsedRange(bigger: number | null | undefined, smaller: number | null | undefined): boolean {
   const diff = (bigger || 0) - (smaller || 0)
-  return diff == 1 || diff == 2
+  return diff === 1 || diff === 2
 }
 
 function determineWhichInviteWasUsed(
   oldInvitesForGuild: Collection<string, Invite> | null,
   newInvitesForGuild: Collection<string, Invite>,
-) {
+): Invite | null {
   if (oldInvitesForGuild) {
     for (const oldInvite of oldInvitesForGuild.values()) {
       const newInvite = newInvitesForGuild.get(oldInvite.code)
@@ -28,7 +28,10 @@ function determineWhichInviteWasUsed(
   }
   return null
 }
-export async function determineIfTemporaryInviteUsedAndUpdateInviteCache(guild: Guild, cache: InviteCache) {
+export async function determineIfTemporaryInviteUsedAndUpdateInviteCache(
+  guild: Guild,
+  cache: InviteCache,
+): Promise<boolean> {
   const guildLogger = logger.child({ guild: guild.id })
   return cache.gate.workFast(guild, async () => {
     const oldInvites = cache.getGuild(guild)
@@ -36,6 +39,6 @@ export async function determineIfTemporaryInviteUsedAndUpdateInviteCache(guild: 
     const newInvites = await cache.fetchAndCache(guild)
     const inviteUsed = determineWhichInviteWasUsed(oldInvites, newInvites)
     guildLogger.debug({ inviteUsed }, 'new user used invite %s', inviteUsed?.code || 'unknown')
-    return inviteUsed && inviteUsed.temporary
+    return !!inviteUsed?.temporary
   })
 }

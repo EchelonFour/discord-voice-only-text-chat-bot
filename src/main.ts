@@ -5,7 +5,7 @@ import globalLogger from './logger.js'
 import { wait } from './util.js'
 
 import { calculateRoleDifference } from './roleCalculations.js'
-import { determineIfTemporaryInviteUsedAndUpdateInviteCache } from './inviteCalculations.js'
+import { determineIfTemporaryInviteUsedAndUpdateInviteCache } from './invite-calculations.js'
 import { InviteCache } from './cache/InviteCache'
 import { TemporaryMemberCache } from './cache/TemporaryMemberCache'
 import { setUpDiscordLoggerListener } from './discord-logger.js'
