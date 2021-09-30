@@ -16,9 +16,11 @@ jobs:
         with:
           node-version: '14'
       - run: npm ci
-      - uses: EPMatt/reviewdog-action-tsc@v1
-        with:
-          reporter: github-check
+      # this is commented out until https://github.com/reviewdog/reviewdog/issues/924 is fixed
+      # - uses: EPMatt/reviewdog-action-tsc@v1
+      #   with:
+      #     reporter: github-check
+      #     level: warning
       - uses: reviewdog/action-eslint@v1
         with:
           reporter: github-check
