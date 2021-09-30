@@ -113,7 +113,7 @@ async function guildMemberAddAsync(member: GuildMember): Promise<void> {
   if (shouldAddRole) {
     guildLogger.debug('adding role "%s" to user %s', roleToAdd, member.displayName)
     try {
-      const roleActual = member.guild.roles.cache.find((role) => role.name == roleToAdd)
+      const roleActual = member.guild.roles.cache.find((role) => role.name === roleToAdd)
       if (!roleActual) {
         throw new Error(`could not find role ${roleToAdd}`)
       }
