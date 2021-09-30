@@ -27,6 +27,6 @@ ENV NODE_ENV production
 COPY --chown=node:node package*.json ./
 
 COPY --chown=node:node --from=base /tmp/node_modules_prod ./node_modules
-COPY --chown=node:node --from=base /bot/dist ./dist
+COPY --chown=node:node --from=base /bot/.dist ./dist
 USER node
 CMD ["dumb-init", "node","--enable-source-maps", "dist/main.js"]
