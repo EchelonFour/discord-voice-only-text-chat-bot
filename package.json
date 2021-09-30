@@ -10,7 +10,7 @@
     "buildConfigTable": "node --no-warnings --loader ts-node/esm configTableGenerator.ts",
     "start:prod": "node --enable-source-maps .dist/main.js",
     "formatLogs": "pino-pretty --config=pino-config/pino-pretty.config.js",
-    "lint": "eslint ."
+    "lint": "eslint src"
   },
   "author": "",
   "license": "ISC",
