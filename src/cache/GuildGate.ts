@@ -1,7 +1,7 @@
 import AsyncLock from 'async-lock'
 import { Guild } from 'discord.js'
 
-import globalLogger from './logger.js'
+import globalLogger from '../logger.js'
 
 const logger = globalLogger.child({ module: 'guildGate' })
 
